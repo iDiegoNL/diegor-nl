@@ -10,9 +10,16 @@
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "size": "bun scripts/size.mjs"
+    "size": "bun scripts/size.mjs",
+    "build:worker": "astro build && bun scripts/build-worker.mjs",
+    "dev:worker": "wrangler dev -c worker/wrangler.jsonc",
+    "deploy:worker": "wrangler deploy -c worker/wrangler.jsonc",
+    "types:worker": "wrangler types -c worker/wrangler.jsonc worker/worker-configuration.d.ts"
   },
   "dependencies": {
     "astro": "^7.3.5"
+  },
+  "devDependencies": {
+    "wrangler": "^4.147.0"
   }
 }

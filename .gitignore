@@ -25,3 +25,7 @@ pnpm-debug.log*
 
 # wrangler local state (pages dev / deploy)
 .wrangler/
+
+# generated Worker bundle inputs (scripts/build-worker.mjs)
+.worker/
+worker/worker-configuration.d.ts

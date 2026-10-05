@@ -15,12 +15,18 @@ The project uses [Bun](https://bun.sh) as its package manager and script runner.
 | `bun run build`   | Static build into `dist/`; also writes the CSP hashes into `dist/_headers`                       |
 | `bun run preview` | Serve `dist/` locally. In Astro 7 this runs as a background daemon; stop it with `bunx astro preview stop` |
 | `bun run size`    | Build, then print the Brotli size of `dist/index.html` and every image. Exits 1 if the HTML is over 14 KB |
+| `bun run build:worker` | `astro build`, then pack `dist/` into the Worker bundle inputs in `.worker/` |
+| `bun run dev:worker` | Build and run the Worker locally with `wrangler dev` (rebuilds on changes) |
+| `bun run deploy:worker` | Build and deploy the Worker (needs `bunx wrangler login` once) |
+| `bun run types:worker` | Regenerate the Workers runtime types into `worker/worker-configuration.d.ts` (gitignored) |
 
 `bun run size -- --no-build` measures the existing `dist/` without rebuilding.
 
-## Deploying to Cloudflare Pages
+## Alternative: deploying to Cloudflare Pages
 
-Git integration (recommended):
+Production runs on the Worker (next section). The same `dist/` still deploys to Pages unchanged if you ever need it.
+
+Git integration:
 
 - Framework preset: **Astro** (or none)
 - Build command: `bun run build`
@@ -35,6 +41,56 @@ bunx wrangler pages deploy dist --project-name diegor-nl
 ```
 
 To test the real headers locally (the CSP, cache rules and 404 handling), run `bunx wrangler pages dev dist`. Restart it after every build: it does not reload `_headers`.
+
+## Deploying as a Cloudflare Worker (production)
+
+`worker/` holds the production deploy target: a Worker on `diegor.nl` that serves the whole site from memory.
+
+### Why
+
+Both are deployed and were measured side by side from Prague (same PRG edge, 6 October 2026). Requests alternated between the two hosts, with a fresh connection and an empty cache each time.
+
+| Median (worst) in ms | Pages | Worker |
+| --- | --- | --- |
+| Server time per request (TTFB − TLS − 1 RTT), n=30 | 26 (76) | 15 (47) |
+| Desktop: TTFB / FCP / LCP / last request done, n=8 | 78 / 128 / 160 / 151 | 68 / 108 / 144 / 136 |
+| Mobile: TTFB / FCP / LCP / last request done, n=8 | 72 / 124 / 124 / 122 | 64 / 112 / 112 / 121 |
+| HTML on the wire | 11,848 B (edge Brotli) | 9,951 B (q11) |
+
+So the Worker is about 10–20 ms faster to first paint, and its HTML is 1.9 KB smaller. Most of the remaining time is network floor: TCP, TLS and the request take three round trips of about 13 ms each.
+
+Both hosts had a cold outlier. On Pages, a file the edge hadn't served recently once took 230 ms. On the Worker, the first request after deploying took 1.2 s.
+
+### How
+
+1. `scripts/build-worker.mjs` turns every file in `dist/` into a Data module bundled into the Worker script.
+2. Text files are pre-compressed at Brotli q11 and gzip -9.
+3. Each file's headers are resolved from `dist/_headers` at build time, so the CSP, cache rules and security headers stay identical to Pages.
+
+`worker/index.ts` is a small `fetch` handler:
+
+- It picks the Brotli, gzip or identity body according to `Accept-Encoding` (with `encodeBody: "manual"`, so nothing is re-compressed).
+- It answers `If-None-Match` with a 304.
+- It serves the 404 page with status 404, redirects `*/index.html`, and only allows `GET`/`HEAD`.
+
+There's no storage hop: every response comes straight out of the isolate's memory. Locally it passes everything the Pages version does: Lighthouse 100 / 100 / 100 / 100 and a clean CSP. Upload size is 256 KiB (177 KiB gzipped).
+
+### Trade-off
+
+Every request runs the Worker, unlike Pages, where static requests are free and unlimited.
+
+- **Workers Free:** 100,000 requests/day. One page view is 4–10 requests (HTML, 3–8 images, plus the icon sprite if a case study is opened). That's roughly 10,000–25,000 page views a day. Over the limit, requests fail rather than fall back.
+- **Workers Paid:** $5/month, with 10M requests/month included.
+
+### Deploy
+
+- **From your machine:** run `bunx wrangler login` once, then `bun run deploy:worker`. It rebuilds first, through `build.command` in `worker/wrangler.jsonc`, and deploys to `diegor-nl.<your-subdomain>.workers.dev`.
+- **From Git (Workers Builds):** import the repo as a Worker and set the deploy command to `bun run deploy:worker`.
+- **Custom domain:** `diegor.nl` is configured in `worker/wrangler.jsonc` (`routes`, with `custom_domain: true`). Cloudflare manages its DNS record.
+- **www:** `www.diegor.nl` 301-redirects to `diegor.nl` through a Cloudflare Redirect Rule, using a proxied placeholder record `A www 192.0.2.1`. That's zone configuration, not part of this repo. The redirect happens at the edge, so it never runs the Worker.
+- **Zone settings:** keep Email Address Obfuscation and Rocket Loader off for `diegor.nl`. Both inject `/cdn-cgi/` scripts into HTML, which the CSP blocks, and Email Obfuscation would rewrite the `mailto:` links.
+
+The Worker config lives in `worker/wrangler.jsonc`, not the repo root, so a Pages project connected to this repo would keep building unchanged.
 
 ### Headers and CSP
 

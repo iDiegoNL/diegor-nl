@@ -1,0 +1,20 @@
+// Worker deploy target: serves dist/ from memory (see index.ts and scripts/build-worker.mjs).
+// Lives in worker/ rather than the repo root so Cloudflare Pages builds never pick it up.
+// Paths are relative to this file. Use the package scripts, which pass `-c worker/wrangler.jsonc`.
+{
+  "$schema": "../node_modules/wrangler/config-schema.json",
+  "name": "diegor-nl",
+  "main": "index.ts",
+  "compatibility_date": "2026-10-01",
+  // Production domain. Cloudflare manages the DNS record for it; on first deploy, wrangler
+  // offers to replace whatever record diegor.nl pointed at before.
+  "routes": [{ "pattern": "diegor.nl", "custom_domain": true }],
+  // Runs before `wrangler dev` and `wrangler deploy`, so a deploy can never ship a stale build.
+  "build": {
+    "command": "bun run build:worker",
+    "watch_dir": ["../src", "../public", "../scripts", "../integrations"]
+  },
+  "observability": {
+    "enabled": true
+  }
+}
