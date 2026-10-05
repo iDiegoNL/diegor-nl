@@ -445,3 +445,44 @@ export const awoostriaStats: Stat[] = [
   ["~98%", "of human-authored commits"],
   ["~99%", "of application code"]
 ];
+
+// Stack label → icon slug (symbol `si-<slug>` in src/assets/stack-icons.svg). Mostly the design's
+// Simple Icons mapping, plus aws, awss3, pest and phpstan. Labels without an entry render as text only.
+export const stackIcons: Record<string, string> = {
+  "PHP 8.3": "php",
+  "Laravel": "laravel",
+  "Laravel 12": "laravel",
+  "Laravel Horizon": "laravel",
+  "Laravel Passport (OAuth2)": "laravel",
+  "React": "react",
+  "Inertia.js": "inertia",
+  "TypeScript": "typescript",
+  "PostgreSQL": "postgresql",
+  "Redis": "redis",
+  "Stripe": "stripe",
+  "Stripe (Laravel Cashier)": "stripe",
+  "Node.js (Fastify)": "nodedotjs",
+  "Expo / React Native": "expo",
+  "Next.js (Fumadocs)": "nextdotjs",
+  "n8n": "n8n",
+  "Livewire 3": "livewire",
+  "Alpine.js": "alpinedotjs",
+  "Tailwind CSS": "tailwindcss",
+  "MySQL": "mysql",
+  "Cloudflare (Image Resizing, Turnstile)": "cloudflare",
+  "Sentry": "sentry",
+  "Umami Analytics": "umami",
+  "Vite": "vite",
+  "Bun": "bun",
+  "Docker": "docker",
+  "GitHub Actions": "githubactions",
+  "Filament": "filament",
+  "Filament 3": "filament",
+  "AWS SES & S3": "aws",
+  "S3-compatible storage": "awss3",
+  "Pest": "pest",
+  "PHPStan": "phpstan"
+};
+
+// Symbols that aren't square; their chip slot is widened to keep them legible.
+export const wideStackIcons = new Set(["aws"]);

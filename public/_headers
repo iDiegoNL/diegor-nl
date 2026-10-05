@@ -1,6 +1,6 @@
 # Cloudflare Pages headers. The script-src and style-src hash placeholders are filled in
 # at build time by integrations/csp-headers.mjs (see dist/_headers).
-# connect-src 'self' only exists so Lighthouse's in-page robots.txt fetch isn't blocked.
+# connect-src 'self' lets the page fetch its stack-icon sprite (and Lighthouse its robots.txt).
 
 /*
   Strict-Transport-Security: max-age=63072000; includeSubDomains; preload

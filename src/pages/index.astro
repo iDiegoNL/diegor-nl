@@ -1,5 +1,6 @@
 ---
 import fans from '../assets/fans-holding.png';
+import stackIconsUrl from '../assets/stack-icons.svg?url&no-inline';
 import awoostria from '../assets/awoostria.png';
 import Archive from '../components/Archive.astro';
 import CaseStudy from '../components/CaseStudy.astro';
@@ -24,7 +25,7 @@ import {
   <head>
     <Head />
   </head>
-  <body>
+  <body data-icons={stackIconsUrl}>
     <a class="skip" href="#top">Skip to content</a>
     <div class="wrap">
       <SiteHeader />
@@ -64,6 +65,7 @@ import {
     </div>
     <script is:inline>
       for(const b of document.querySelectorAll(".collapse"))b.onclick=()=>{const d=b.closest("details");d.open=!1;d.firstElementChild.focus({preventScroll:!0});d.closest("section").scrollIntoView()}
+      let i;for(const d of document.querySelectorAll("details"))d.ontoggle=()=>{i||=d.open&&fetch(document.body.dataset.icons).then(r=>r.text()).then(t=>document.body.insertAdjacentHTML("beforeend",t))}
     </script>
   </body>
 </html>
@@ -153,6 +155,14 @@ import {
     max-width: 1200px;
     margin: 0 auto;
     padding: 0 var(--gutter);
+  }
+  /* Stack-icon sprite, inlined at the end of <body> on first case-study expand.
+     Zero-size rather than display:none, which would stop its gradients from painting. */
+  .icons {
+    position: absolute;
+    width: 0;
+    height: 0;
+    overflow: hidden;
   }
   .skip {
     position: absolute;

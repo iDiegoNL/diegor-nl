@@ -2,7 +2,7 @@
 
 Single-page personal site for Diego Relyveld, built with Astro as a fully static site and deployed to Cloudflare Pages.
 
-The top priority is speed. The whole page (HTML, CSS and JS) arrives in the first TCP round trip, there is no client framework, and the only other requests are a few small images.
+The top priority is speed. The whole page (HTML, CSS and JS) arrives in the first TCP round trip, there is no client framework, and the only other requests are a few small images. The tech-stack icons load only when a case study is opened.
 
 ## Commands
 
@@ -47,7 +47,7 @@ To test the real headers locally (the CSP, cache rules and 404 handling), run `b
 
 The CSP allows the inline `<style>` and `<script>` blocks by their **sha256 hashes**. `integrations/csp-headers.mjs` is a build-only Astro integration (it ships 0 bytes). After each build it hashes every inline block in `dist/*.html` and writes the hashes into `dist/_headers`. It also fails the build if any `style=""` attribute appears, because hashes can't cover those. If you add inline JS or CSS, nothing else needs to change.
 
-`connect-src 'self'` is in the policy only so that Lighthouse's in-page `robots.txt` fetch isn't blocked. Without it the SEO score drops to 92.
+`connect-src 'self'` lets the page fetch its own tech-stack icon sprite (see below). It also keeps Lighthouse's in-page `robots.txt` fetch from being blocked; without it the SEO score drops to 92.
 
 `src/pages/404.astro` exists because, without a top-level `404.html`, Cloudflare Pages treats the site as a SPA and serves the homepage with a `200` for every unknown URL.
 
@@ -57,14 +57,15 @@ Measured on Astro 7.3.5 with `bun run size`. Brotli quality 11 via `node:zlib`.
 
 | Asset | Size |
 | --- | --- |
-| `dist/index.html`, raw (with all CSS + JS inlined) | 46,493 B |
-| `dist/index.html`, gzip -9 | 11.04 KB |
-| **`dist/index.html`, Brotli** | **9,573 B (9.35 KB), 4,763 B under the 14 KB budget** |
-| Inline CSS / inline JS (raw) | 11.6 KB / 204 B |
-| Images on first load, mobile (DPR 1.75) | 10.2 KB (3 AVIFs) |
-| Images after scrolling the whole page, mobile | 18.4 KB (8 AVIFs) |
-| Images on first load, desktop retina | 21.8 KB (8 AVIFs) |
-| All image files in `dist/` (every variant, the OG JPEG and the touch icon) | 117.7 KB in 22 files; most are never downloaded |
+| `dist/index.html`, raw (with all CSS + JS inlined) | 50,811 B |
+| `dist/index.html`, gzip -9 | 11.45 KB |
+| **`dist/index.html`, Brotli** | **9,951 B (9.72 KB), 4,385 B under the 14 KB budget** |
+| Inline CSS / inline JS (raw) | 11.3 KB / 407 B |
+| Images on first load, mobile (DPR 1.75) | 9.9 KB (3 AVIFs) |
+| Images after scrolling the whole page, mobile | 18.0 KB (8 AVIFs) |
+| Images on first load, desktop retina | 21.3 KB (8 AVIFs) |
+| All image files in `dist/` (every variant, the OG JPEG and the touch icon) | 114.9 KB in 22 files; most are never downloaded |
+| Tech-stack icon sprite, fetched on first case-study expand | 19.0 KB raw, 6.9 KB Brotli |
 
 Requests, measured with puppeteer on Pages-emulated headers:
 
@@ -73,6 +74,7 @@ Requests, measured with puppeteer on Pages-emulated headers:
 | Mobile, first load | **4**: the HTML, header avatar, Fans Holdings logo, hero portrait |
 | Desktop, first load | 9: the five lazy logos below the hero (Awoostria plus four employers) fall within Chrome's lazy-load distance, so they load right away. None of them block rendering. |
 | After scrolling the whole page | 9 in total |
+| Opening a case study | +1, the icon sprite, fetched once for both case studies |
 
 There are no font, CSS, JS, favicon or third-party requests, and nothing render-blocking.
 
@@ -85,13 +87,25 @@ Lighthouse 13.5, run locally against `wrangler pages dev` with the production he
 
 ## How it's built
 
-- `src/pages/index.astro`: page shell, global tokens (CSS custom properties) and base styles, and the one inline script
+- `src/pages/index.astro`: page shell, global tokens (CSS custom properties) and base styles, and the one inline script (collapse button + icon loader)
 - `src/components/`: `Head`, `SiteHeader`, `Hero` (with the duties cards), `Experience`, `CaseStudy` (used for both FansAPI and Awoostria), `Archive`, `SiteFooter`. Each has scoped CSS.
 - `src/data/content.ts`: all the copy for lists, experience, case studies and the archive. It was extracted programmatically from the design's `renderVals()`, so the text matches it exactly.
 - `src/assets/`: the avatar and the six employer logos. They are rendered with `astro:assets` `<Picture>` as an AVIF `<source>` plus a WebP `<img>`.
   - Fixed-size images get a single 2× file (header avatar 72 px, Fans Holdings logo 144 px, Awoostria logo 120 px, the other four employer logos 80 px). Their `width`/`height` attributes reserve space, and CSS sets the display size.
   - The hero portrait uses 400/640/832w with `sizes`. It gets `loading="eager"` and `fetchpriority="high"` because it sits above the fold on desktop.
   - Each logo is a single shared file across all of its placements, so it's fetched once.
+- `src/assets/stack-icons.svg`: an SVG sprite with all 28 tech-stack icons, one `<symbol id="si-<slug>">` each, in brand colours.
+  - Sources:
+    - 24 from [Simple Icons](https://simpleicons.org) 16.34.0 (CC0)
+    - AWS (`aws`) and AWS S3 (`awss3`) from svg-logos, via Iconify's `logos` set (CC0)
+    - PHPStan from vscode-icons (MIT)
+    - Pest's official logomark from pestphp.com
+  - The sprite file header credits each source. Paths are rounded to about 1 decimal per 24 viewBox units, with no visible difference at 16 px.
+  - `src/data/content.ts` (`stackIcons`) maps each stack label to its slug. It's the design's mapping plus AWS SES & S3, S3-compatible storage, Pest and PHPStan, so every label now has an icon.
+  - `wideStackIcons` lists the symbols that aren't square. Right now that's only the AWS wordmark, whose slot is 27 px wide instead of 16.
+  - The chips contain `<svg><use href="#si-…">` slots. The sprite is imported with `?url&no-inline`, so it ships as a hashed, immutable `/_astro/` file. The inline script fetches it the first time any case study opens, including via find-in-page, and inlines it at the end of `<body>`.
+  - Inlining it in the HTML instead would cost 6.9 KB Brotli, more than the remaining budget, for icons that are hidden until a case study is opened.
+  - To add an icon, add a `<symbol id="si-<slug>" viewBox="…">` with the icon's SVG content and map the label in `stackIcons`. If the icon uses gradients, prefix their IDs with the slug. The sprite is hidden as a zero-size box rather than `display:none`, so gradients still paint.
 - `public/apple-touch-icon.png`: 180×180 palette PNG generated from the avatar:
   `node -e 'require("sharp")("src/assets/avatar.jpeg").resize(180,180).png({palette:true,quality:90,effort:10,compressionLevel:9}).toFile("public/apple-touch-icon.png")'`
 - Favicon: an inline SVG data URI in `<head>`, so no request.
@@ -109,12 +123,12 @@ Lighthouse 13.5, run locally against `wrangler pages dev` with the production he
 ## What changed from the design for speed
 
 - **Fonts.** The design loads Bricolage Grotesque (opsz + wght 400–800) and Geist Mono from Google Fonts. The site uses a `system-ui` stack and `ui-monospace` instead. Measured cost of self-hosting them as Latin-only WOFF2:
-  - Bricolage Grotesque: 41.2 KB as a weight-only variable font (76.9 KB with the optical-size axis)
-  - Geist Mono 400/500: another 23.1 KB
+  - Bricolage Grotesque: 40.3 KB as a weight-only variable font (75.1 KB with the optical-size axis)
+  - Geist Mono 400/500: another 22.6 KB
 
   That's 4–8× the entire HTML, plus a swap-related layout-shift risk. The headings still use weight 800 and the design's tight tracking.
-- **Tech-stack icons dropped.** The chips loaded logos from `cdn.simpleicons.org` (24 unique third-party requests once both case studies are expanded). They're text-only now.
-- **Expand/collapse.** React state became a native `<details>`. It works without JS, and Chrome's find-in-page opens it. A 204-byte inline script powers the bottom "Collapse" button: it closes the section, scrolls back to the top of the case study and returns focus to the toggle.
+- **Tech-stack icons load on demand.** The design loaded them from `cdn.simpleicons.org`: 24 unique third-party requests, with no icon for AWS, S3, Pest or PHPStan. They're now one self-hosted SVG sprite (6.9 KB Brotli) that covers all 28. It's fetched the first time a case study opens and inlined as SVG. Without JS, the chips show text only.
+- **Expand/collapse.** React state became a native `<details>`. It works without JS, and Chrome's find-in-page opens it. Part of the inline script (407 bytes in total, including the icon loader) powers the bottom "Collapse" button: it closes the section, scrolls back to the top of the case study and returns focus to the toggle.
 - **Logos that could be inline SVG.** Both are simple enough: the FansAPI `>_` mark is a rounded square, a gradient and two strokes, and the Awoostria wolf is one flat silhouette. They're kept as raster (1.9 KB and 2.7 KB AVIF) for now. Inlining them would save two requests but add their path data to the HTML.
 
 ### Smaller deviations
