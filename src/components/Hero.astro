@@ -1,0 +1,171 @@
+---
+import { Picture } from 'astro:assets';
+import avatar from '../assets/avatar.jpeg';
+import fans from '../assets/fans-holding.png';
+import { duties } from '../data/content';
+---
+
+<section id="top">
+  <div>
+    <p class="role">
+      <Picture src={fans} formats={['avif']} fallbackFormat="webp" width={144} height={144} alt="" loading="eager" />
+      Head of Engineering at Fans Holdings
+    </p>
+    <h1>I lead the team and the platform behind <span>FansAPI</span>.</h1>
+    <div class="lede">
+      <p>I’m Diego, Head of Engineering at Fans Holdings in Prague. FansAPI (formerly OnlyFansAPI) is our API platform for businesses in the creator economy.</p>
+      <p>I lead architecture decisions and our monitoring tooling, I’m on call when something goes down, and I’m the direct technical contact for our enterprise customers. I also own technical hiring: I review applicants’ test tasks and run the final interviews.</p>
+      <p>I’m still hands-on, with around 1,650 commits to the core platform since April 2025. Before this I built loyalty software at Piggy / Leat, worked at Dutch agencies, and ran technology for the non-profit Awoostria.</p>
+    </div>
+    <p class="actions">
+      <a class="btn primary dn" href="#fansapi">See what I built at FansAPI</a>
+      <a class="btn ext" href="https://linkedin.com/in/diego-relyveld">LinkedIn</a>
+      <a class="btn ext" href="https://github.com/iDiegoNL">GitHub</a>
+    </p>
+  </div>
+  <div class="photo">
+    <Picture
+      src={avatar}
+      formats={['avif']}
+      fallbackFormat="webp"
+      widths={[400, 640, 832]}
+      sizes="(min-width: 480px) 416px, calc(100vw - 56px)"
+      width={832}
+      height={832}
+      alt="Diego Relyveld"
+      loading="eager"
+      fetchpriority="high"
+    />
+  </div>
+</section>
+
+<dl class="duties">
+  {
+    duties.map((d) => (
+      <div>
+        <dt>{d.label}</dt>
+        <dd>{d.text}</dd>
+      </div>
+    ))
+  }
+</dl>
+
+<style>
+  section {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr));
+    gap: clamp(32px, 5vw, 64px);
+    align-items: center;
+    padding: clamp(40px, 7vw, 88px) 0 clamp(40px, 6vw, 72px);
+  }
+  .role {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 14px 6px 8px;
+    border-radius: var(--pill);
+    background: var(--violet-soft);
+    color: var(--violet-ink);
+    font-size: 14px;
+    font-weight: 600;
+  }
+  .role img {
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+  }
+  h1 {
+    margin-top: 24px;
+    font-size: clamp(42px, 5.6vw, 72px);
+    line-height: 1.02;
+    font-weight: 800;
+    letter-spacing: -0.035em;
+    text-wrap: balance;
+  }
+  h1 span {
+    color: var(--violet);
+  }
+  .lede {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    max-width: 600px;
+    margin-top: 28px;
+    color: var(--body);
+    font-size: 18px;
+    line-height: 1.6;
+    text-wrap: pretty;
+  }
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 32px;
+  }
+  .btn {
+    padding: 12px 20px;
+    border-radius: var(--pill);
+    background: var(--card);
+    box-shadow: 0 0 0 1px var(--line-2);
+    font-size: 15px;
+    font-weight: 600;
+  }
+  .primary {
+    background: var(--violet);
+    box-shadow: none;
+    color: #fff;
+  }
+  .primary:hover {
+    background: var(--violet-hover);
+    color: #fff;
+  }
+  .photo {
+    position: relative;
+    justify-self: center;
+    width: 100%;
+    max-width: 440px;
+    padding: 12px;
+  }
+  .photo::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: var(--r-panel);
+    background: var(--violet-soft);
+    transform: rotate(-4deg);
+  }
+  .photo img {
+    position: relative;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1;
+    border-radius: 28px;
+    transform: rotate(2deg);
+    box-shadow: 0 24px 48px -24px rgb(23 21 28 / 0.35);
+  }
+  .duties {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+    gap: 12px;
+    padding-bottom: var(--section);
+  }
+  .duties div {
+    padding: 22px;
+    border-radius: var(--r-card);
+    background: var(--card);
+    box-shadow: 0 0 0 1px var(--line);
+  }
+  dt {
+    color: var(--violet);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  dd {
+    margin-top: 8px;
+    color: var(--ink-2);
+    font-size: 16px;
+    line-height: 1.45;
+  }
+</style>

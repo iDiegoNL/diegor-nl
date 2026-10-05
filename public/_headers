@@ -1,0 +1,21 @@
+# Cloudflare Pages headers. The script-src and style-src hash placeholders are filled in
+# at build time by integrations/csp-headers.mjs (see dist/_headers).
+# connect-src 'self' only exists so Lighthouse's in-page robots.txt fetch isn't blocked.
+
+/*
+  Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: accelerometer=(), autoplay=(), camera=(), display-capture=(), encrypted-media=(), fullscreen=(), geolocation=(), gyroscope=(), hid=(), idle-detection=(), magnetometer=(), microphone=(), midi=(), payment=(), picture-in-picture=(), publickey-credentials-get=(), screen-wake-lock=(), serial=(), sync-xhr=(), usb=(), xr-spatial-tracking=()
+  Content-Security-Policy: default-src 'none'; img-src 'self' data:; connect-src 'self'; style-src {{STYLE_HASHES}}; script-src {{SCRIPT_HASHES}}; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; upgrade-insecure-requests
+  Cross-Origin-Opener-Policy: same-origin
+  X-Frame-Options: DENY
+
+/_astro/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/
+  Cache-Control: public, max-age=0, must-revalidate
+
+/*.html
+  Cache-Control: public, max-age=0, must-revalidate

@@ -1,0 +1,57 @@
+---
+import { getImage } from 'astro:assets';
+import avatar from '../assets/avatar.jpeg';
+
+interface Props {
+  /** Minimal, noindex head for the 404 page. */
+  notFound?: boolean;
+}
+
+const { notFound = false } = Astro.props;
+const title = notFound ? 'Page not found · Diego Relyveld' : 'Diego Relyveld · Head of Engineering at Fans Holdings';
+const description =
+  'Diego Relyveld is Head of Engineering at Fans Holdings in Prague, leading the team and platform behind FansAPI. Experience, case studies and earlier work.';
+const canonical = new URL('/', Astro.site).href;
+
+// JPEG for link previews: AVIF/WebP support among scrapers is patchy.
+const og = await getImage({ src: avatar, width: 600, height: 600, format: 'jpg', quality: 80 });
+const ogImage = new URL(og.src, Astro.site).href;
+
+const favicon =
+  'data:image/svg+xml,' +
+  "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='9' fill='#6b3fd1'/><text x='16' y='23' fill='#fff' font-family='system-ui,sans-serif' font-size='20' font-weight='800' text-anchor='middle'>D</text></svg>"
+    .replace(/</g, '%3C')
+    .replace(/>/g, '%3E')
+    .replace(/#/g, '%23');
+---
+
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>{title}</title>
+<meta name="color-scheme" content="light" />
+<meta name="theme-color" content="#fbfaf8" />
+<link rel="icon" href={favicon} />
+{
+  notFound ? (
+    <meta name="robots" content="noindex" />
+  ) : (
+    <>
+      <meta name="description" content={description} />
+      <link rel="canonical" href={canonical} />
+      <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+      <meta property="og:type" content="website" />
+      <meta property="og:site_name" content="Diego Relyveld" />
+      <meta property="og:url" content={canonical} />
+      <meta property="og:title" content={title} />
+      <meta property="og:description" content={description} />
+      <meta property="og:image" content={ogImage} />
+      <meta property="og:image:width" content={String(og.attributes.width)} />
+      <meta property="og:image:height" content={String(og.attributes.height)} />
+      <meta property="og:image:alt" content="Portrait of Diego Relyveld" />
+      <meta name="twitter:card" content="summary" />
+      <meta name="twitter:title" content={title} />
+      <meta name="twitter:description" content={description} />
+      <meta name="twitter:image" content={ogImage} />
+    </>
+  )
+}

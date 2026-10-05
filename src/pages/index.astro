@@ -1,0 +1,189 @@
+---
+import fans from '../assets/fans-holding.png';
+import awoostria from '../assets/awoostria.png';
+import Archive from '../components/Archive.astro';
+import CaseStudy from '../components/CaseStudy.astro';
+import Experience from '../components/Experience.astro';
+import Head from '../components/Head.astro';
+import Hero from '../components/Hero.astro';
+import SiteFooter from '../components/SiteFooter.astro';
+import SiteHeader from '../components/SiteHeader.astro';
+import {
+  awoostriaFeatures,
+  awoostriaOwned,
+  awoostriaStack,
+  awoostriaStats,
+  fansapiFeatures,
+  fansapiOwned,
+  fansapiStack,
+  fansapiStats,
+} from '../data/content';
+---
+
+<html lang="en">
+  <head>
+    <Head />
+  </head>
+  <body>
+    <a class="skip" href="#top">Skip to content</a>
+    <div class="wrap">
+      <SiteHeader />
+      <main>
+        <Hero />
+        <Experience />
+        <CaseStudy
+          id="fansapi"
+          tone="violet"
+          logo={fans}
+          title="FansAPI"
+          kicker="Case study · April 2025 – present"
+          sub="Formerly OnlyFansAPI · Fans Holdings"
+          stats={fansapiStats}
+          ownedTitle="Projects I owned and built"
+          owned={fansapiOwned}
+          features={fansapiFeatures}
+          stack={fansapiStack}
+        />
+        <CaseStudy
+          id="awoostria"
+          tone="rose"
+          logo={awoostria}
+          title="Awoostria"
+          kicker="Case study · July 2023 – September 2025"
+          sub="Head of Technology ·"
+          link={{ href: 'https://awoostria.at', label: 'awoostria.at' }}
+          stats={awoostriaStats}
+          ownedTitle="Systems I built"
+          owned={awoostriaOwned}
+          features={awoostriaFeatures}
+          stack={awoostriaStack}
+        />
+        <Archive />
+      </main>
+      <SiteFooter />
+    </div>
+    <script is:inline>
+      for(const b of document.querySelectorAll(".collapse"))b.onclick=()=>{const d=b.closest("details");d.open=!1;d.firstElementChild.focus({preventScroll:!0});d.closest("section").scrollIntoView()}
+    </script>
+  </body>
+</html>
+
+<style is:global>
+  :root {
+    --bg: #fbfaf8;
+    --card: #fff;
+    --ink: #17151c;
+    --ink-2: #2b2833;
+    --ink-3: #3a3642;
+    --body: #4d4957;
+    --muted: #5f5b68;
+    /* Design used #7a7684; darkened to pass WCAG AA (4.5:1) at 12-13px. */
+    --faint: #6c6876;
+    --line: #ebe8ef;
+    --line-2: #e3e0e8;
+    --rule: #f0eef3;
+    --hover: #f3f1f6;
+    --violet: #6b3fd1;
+    --violet-hover: #5a31b8;
+    --violet-ink: #4a2a99;
+    --violet-soft: #efe9fc;
+    --violet-line: #ddd2f7;
+    --lilac: #c9b5f7;
+    --rose: #a3203a;
+    --rose-hover: #861a30;
+    --rose-soft: #fdebee;
+    --rose-line: #f6cdd5;
+    --pill: 9999px;
+    --r-card: 20px;
+    --r-panel: 36px;
+    --gutter: clamp(16px, 3vw, 32px);
+    --section: clamp(56px, 8vw, 96px);
+    --sans: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  *,
+  ::before,
+  ::after {
+    box-sizing: border-box;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--sans);
+    -webkit-font-smoothing: antialiased;
+  }
+  h1,
+  h2,
+  h3,
+  h4,
+  p,
+  ul,
+  dl,
+  dd {
+    margin: 0;
+  }
+  ul {
+    padding: 0;
+    list-style: none;
+  }
+  img {
+    display: block;
+  }
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+  a:hover {
+    color: var(--violet);
+  }
+  :focus-visible {
+    outline: 2px solid var(--violet);
+    outline-offset: 2px;
+  }
+  section {
+    scroll-margin-top: 16px;
+  }
+  .wrap {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 var(--gutter);
+  }
+  .skip {
+    position: absolute;
+    left: -9999px;
+    z-index: 1;
+    padding: 10px 16px;
+    border-radius: var(--pill);
+    background: var(--ink);
+    color: #fff;
+  }
+  .skip:focus {
+    left: 16px;
+    top: 16px;
+  }
+  .h2 {
+    font-size: clamp(32px, 4vw, 44px);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+  }
+  /* Arrows are decorative: the empty alt text after "/" keeps screen readers quiet,
+     and the no-break space keeps them on the same line as their label. */
+  .ext::after {
+    content: '\a0↗';
+    content: '\a0↗' / '';
+  }
+  .dn::after {
+    content: '\a0↓';
+    content: '\a0↓' / '';
+  }
+  .up::after {
+    content: '\a0↑';
+    content: '\a0↑' / '';
+  }
+</style>

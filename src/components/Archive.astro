@@ -1,0 +1,84 @@
+---
+import { archive } from '../data/content';
+---
+
+<section id="archive">
+  <h2 class="h2">Archive</h2>
+  <p class="intro">Earlier client work and side projects, from my first Laravel project in 2016 onwards.</p>
+  <div class="groups">
+    {
+      archive.map((group) => (
+        <div class="card">
+          <h3>{group.title}</h3>
+          <ul>
+            {group.items.map((item) => (
+              <li>
+                <div>
+                  <strong>{item.name}</strong>
+                  {item.note}
+                </div>
+                <span>{item.year}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))
+    }
+  </div>
+</section>
+
+<style>
+  section {
+    padding-bottom: var(--section);
+  }
+  .intro {
+    max-width: 560px;
+    margin: 10px 0 28px;
+    color: var(--muted);
+    font-size: 17px;
+  }
+  .groups {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr));
+    gap: 12px;
+  }
+  .card {
+    padding: 8px 22px;
+    border-radius: 24px;
+    background: var(--card);
+    box-shadow: 0 0 0 1px var(--line);
+  }
+  h3 {
+    margin: 14px 0 6px;
+    color: var(--faint);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  li {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 11px 0;
+    border-top: 1px solid var(--rule);
+  }
+  div {
+    min-width: 0;
+    color: var(--muted);
+    font-size: 14px;
+  }
+  strong {
+    display: block;
+    color: var(--ink);
+    font-size: 15px;
+    font-weight: 600;
+  }
+  span {
+    flex: none;
+    padding-top: 3px;
+    color: var(--faint);
+    font-family: var(--mono);
+    font-size: 12px;
+  }
+</style>
