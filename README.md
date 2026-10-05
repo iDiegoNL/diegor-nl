@@ -57,21 +57,22 @@ Measured on Astro 7.3.5 with `bun run size`. Brotli quality 11 via `node:zlib`.
 
 | Asset | Size |
 | --- | --- |
-| `dist/index.html`, raw (with all CSS + JS inlined) | 45,888 B |
-| `dist/index.html`, gzip -9 | 10.96 KB |
-| **`dist/index.html`, Brotli** | **9,485 B (9.26 KB), 4,851 B under the 14 KB budget** |
+| `dist/index.html`, raw (with all CSS + JS inlined) | 46,493 B |
+| `dist/index.html`, gzip -9 | 11.04 KB |
+| **`dist/index.html`, Brotli** | **9,573 B (9.35 KB), 4,763 B under the 14 KB budget** |
 | Inline CSS / inline JS (raw) | 11.6 KB / 204 B |
 | Images on first load, mobile (DPR 1.75) | 10.2 KB (3 AVIFs) |
-| Images on first load, desktop retina | 16.3 KB (4 AVIFs) |
-| All image files in `dist/` (every variant, the OG JPEG and the touch icon) | 104.4 KB in 14 files; most are never downloaded |
+| Images after scrolling the whole page, mobile | 18.4 KB (8 AVIFs) |
+| Images on first load, desktop retina | 21.8 KB (8 AVIFs) |
+| All image files in `dist/` (every variant, the OG JPEG and the touch icon) | 117.7 KB in 22 files; most are never downloaded |
 
 Requests, measured with puppeteer on Pages-emulated headers:
 
 | Viewport | Requests |
 | --- | --- |
 | Mobile, first load | **4**: the HTML, header avatar, Fans Holdings logo, hero portrait |
-| Desktop, first load | 5: the Awoostria logo also falls within Chrome's lazy-load distance |
-| After scrolling the whole page | 5 in total |
+| Desktop, first load | 9: the five lazy logos below the hero (Awoostria plus four employers) fall within Chrome's lazy-load distance, so they load right away. None of them block rendering. |
+| After scrolling the whole page | 9 in total |
 
 There are no font, CSS, JS, favicon or third-party requests, and nothing render-blocking.
 
@@ -80,15 +81,15 @@ Lighthouse 13.5, run locally against `wrangler pages dev` with the production he
 | Form factor | Performance | Accessibility | Best Practices | SEO | Metrics |
 | --- | --- | --- | --- | --- | --- |
 | Mobile | 100 | 100 | 100 | 100 | FCP 0.7 s, LCP 1.0 s, TBT 0 ms, CLS 0 |
-| Desktop | 100 | 100 | 100 | 100 | FCP 0.2 s, LCP 0.2 s, TBT 0 ms, CLS 0 |
+| Desktop | 100 | 100 | 100 | 100 | FCP 0.2 s, LCP 0.3 s, TBT 0 ms, CLS 0 |
 
 ## How it's built
 
 - `src/pages/index.astro`: page shell, global tokens (CSS custom properties) and base styles, and the one inline script
 - `src/components/`: `Head`, `SiteHeader`, `Hero` (with the duties cards), `Experience`, `CaseStudy` (used for both FansAPI and Awoostria), `Archive`, `SiteFooter`. Each has scoped CSS.
 - `src/data/content.ts`: all the copy for lists, experience, case studies and the archive. It was extracted programmatically from the design's `renderVals()`, so the text matches it exactly.
-- `src/assets/`: the three source images. They are rendered with `astro:assets` `<Picture>` as an AVIF `<source>` plus a WebP `<img>`.
-  - Fixed-size images get a single 2× file (header avatar 72 px, Fans Holdings logo 144 px, Awoostria logo 120 px). Their `width`/`height` attributes reserve space, and CSS sets the display size.
+- `src/assets/`: the avatar and the six employer logos. They are rendered with `astro:assets` `<Picture>` as an AVIF `<source>` plus a WebP `<img>`.
+  - Fixed-size images get a single 2× file (header avatar 72 px, Fans Holdings logo 144 px, Awoostria logo 120 px, the other four employer logos 80 px). Their `width`/`height` attributes reserve space, and CSS sets the display size.
   - The hero portrait uses 400/640/832w with `sizes`. It gets `loading="eager"` and `fetchpriority="high"` because it sits above the fold on desktop.
   - Each logo is a single shared file across all of its placements, so it's fetched once.
 - `public/apple-touch-icon.png`: 180×180 palette PNG generated from the avatar:
@@ -113,7 +114,6 @@ Lighthouse 13.5, run locally against `wrangler pages dev` with the production he
 
   That's 4–8× the entire HTML, plus a swap-related layout-shift risk. The headings still use weight 800 and the design's tight tracking.
 - **Tech-stack icons dropped.** The chips loaded logos from `cdn.simpleicons.org` (24 unique third-party requests once both case studies are expanded). They're text-only now.
-- **Four experience logos replaced with monogram tiles.** Piggy / Leat, Digital Impact, The Dev Squad and This is Development use CSS initials instead of images. Only Fans Holdings and Awoostria keep real logos, which saves four requests.
 - **Expand/collapse.** React state became a native `<details>`. It works without JS, and Chrome's find-in-page opens it. A 204-byte inline script powers the bottom "Collapse" button: it closes the section, scrolls back to the top of the case study and returns focus to the toggle.
 - **Logos that could be inline SVG.** Both are simple enough: the FansAPI `>_` mark is a rounded square, a gradient and two strokes, and the Awoostria wolf is one flat silhouette. They're kept as raster (1.9 KB and 2.7 KB AVIF) for now. Inlining them would save two requests but add their path data to the HTML.
 
