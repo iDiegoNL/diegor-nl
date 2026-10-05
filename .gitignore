@@ -23,7 +23,7 @@ pnpm-debug.log*
 # jetbrains setting folder
 .idea/
 
-# wrangler local state (pages dev / deploy)
+# wrangler local state (dev / deploy)
 .wrangler/
 
 # generated Worker bundle inputs (scripts/build-worker.mjs)

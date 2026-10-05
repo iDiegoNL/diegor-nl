@@ -1,4 +1,4 @@
-// Content ported from design/Redesign C - Bright.dc.html (renderVals).
+// Content ported from the Claude Design project "Redesign C - Bright" (its renderVals data).
 
 export type Project = { name: string; description: string };
 export type FeatureGroup = { title: string; items: string[] };

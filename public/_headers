@@ -1,4 +1,5 @@
-# Cloudflare Pages headers. The script-src and style-src hash placeholders are filled in
+# Response headers, in Cloudflare's _headers format; scripts/build-worker.mjs applies them per file.
+# The script-src and style-src hash placeholders are filled in
 # at build time by integrations/csp-headers.mjs (see dist/_headers).
 # connect-src 'self' lets the page fetch its stack-icon sprite (and Lighthouse its robots.txt).
 

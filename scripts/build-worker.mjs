@@ -1,7 +1,7 @@
 // Packs dist/ into the Cloudflare Worker in worker/: every file becomes an in-memory
 // Data module, so serving never waits on asset storage. Text files are pre-compressed
 // (Brotli q11 + gzip -9), and each file's headers are resolved from dist/_headers at
-// build time, so Pages and the Worker share one header config. Run after `astro build`.
+// build time, so headers stay in one plain-text file. Run after `astro build`.
 import { createHash } from 'node:crypto';
 import { mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
@@ -26,7 +26,7 @@ const TYPES = {
   '.ico': 'image/x-icon',
 };
 const COMPRESSIBLE = new Set(['.html', '.css', '.js', '.json', '.txt', '.xml', '.svg']);
-// Pages config files: consumed at build time, never served.
+// Static-hosting config files: consumed at build time, never served.
 const SKIP = new Set(['_headers', '_redirects', '_routes.json']);
 
 // _headers: a URL pattern on its own line, then indented "Name: value" lines.
@@ -67,7 +67,7 @@ files.forEach((file, n) => {
   const type = TYPES[ext];
   if (!type) throw new Error(`build-worker: no content type for ${file}`);
   const body = readFileSync(path.join(dist, file));
-  // index.html is served at its directory URL, like Pages does.
+  // index.html is served at its directory URL.
   const urlPath = `/${file}`.replace(/(^|\/)index\.html$/, '$1');
   const headers = { ...headersFor(urlPath), 'content-type': type, etag: `W/"${createHash('sha256').update(body).digest('hex').slice(0, 16)}"` };
 

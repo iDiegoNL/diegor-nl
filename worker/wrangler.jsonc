@@ -1,5 +1,4 @@
 // Worker deploy target: serves dist/ from memory (see index.ts and scripts/build-worker.mjs).
-// Lives in worker/ rather than the repo root so Cloudflare Pages builds never pick it up.
 // Paths are relative to this file. Use the package scripts, which pass `-c worker/wrangler.jsonc`.
 {
   "$schema": "../node_modules/wrangler/config-schema.json",
